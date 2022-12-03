@@ -1,34 +1,32 @@
 import Head from "next/head";
 import { GetServerSideProps, NextPage } from "next";
-import { DateTime, Duration } from "luxon";
-import { useEffect, useRef, useState } from "react";
+import { DateTime } from "luxon";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { showFireworks } from "../lib/fireworks/showFireworks";
+import { calculateYearProgress, calculateYearTimeLeft } from "../lib/utils";
+import { NextSeo } from "next-seo";
 
 const TIMER_INTERVAL_MS = 1000; // 1s
 const IS_CLOSE_THRESHOLD = 30;
 
-const calculateYearTimeLeft = (timeZone: string) => {
-  const currentDate = DateTime.local({ zone: timeZone });
-  const endOfYearDate = DateTime.local({ zone: timeZone }).endOf("year");
+interface Props {
+  initialPercentPassed: number;
+  initialTimeLeft: number;
+  ogUrl: string;
+}
 
-  return endOfYearDate.diff(currentDate).as("seconds");
-};
-
-const calculateYearProgress = (timeLeftSeconds: number) => {
-  const yearDurationInSeconds = Duration.fromObject({ years: 1 }).as("seconds");
-
-  return Math.floor(
-    ((yearDurationInSeconds - timeLeftSeconds) / yearDurationInSeconds) * 100
-  );
-};
-
-export const useYearProgress = (
-  initialPercentPassed: number,
-  initialTimeLeft: number
-) => {
+const YearProgress: NextPage<Props> = ({
+  initialPercentPassed,
+  initialTimeLeft,
+  ogUrl
+}) => {
   const timeZoneRef = useRef(Intl.DateTimeFormat().resolvedOptions().timeZone);
   const [timeLeftInSeconds, setTimeLeftInSeconds] = useState(initialTimeLeft);
   const [percentPassed, setPercentPassed] = useState(initialPercentPassed);
+  const messageToDisplay =
+    timeLeftInSeconds === 0 ? "Happy new year!" : timeLeftInSeconds;
+  const isCloseToEnd = timeLeftInSeconds <= IS_CLOSE_THRESHOLD;
+  const currentYear = useMemo(() => DateTime.local().year, []);
 
   useEffect(() => {
     const intervalId = setInterval(() => {
@@ -41,33 +39,6 @@ export const useYearProgress = (
     return () => clearInterval(intervalId);
   }, []);
 
-  return {
-    currentYear: DateTime.local().year,
-    percentPassed,
-    timeLeftInSeconds,
-    messageToDisplay:
-      timeLeftInSeconds === 0 ? "Happy new year!" : timeLeftInSeconds,
-    isCloseToEnd: timeLeftInSeconds <= IS_CLOSE_THRESHOLD,
-  };
-};
-
-interface Props {
-  initialPercentPassed: number;
-  initialTimeLeft: number;
-}
-
-const YearProgress: NextPage<Props> = ({
-  initialPercentPassed,
-  initialTimeLeft,
-}) => {
-  const {
-    currentYear,
-    percentPassed,
-    messageToDisplay,
-    isCloseToEnd,
-    timeLeftInSeconds,
-  } = useYearProgress(initialPercentPassed, initialTimeLeft);
-
   useEffect(() => {
     if (timeLeftInSeconds === 0) {
       showFireworks();
@@ -76,15 +47,26 @@ const YearProgress: NextPage<Props> = ({
 
   return (
     <div>
-      <Head>
-        <title>Year Progress</title>
-        <meta name="description" content="Shows the year progress" />
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
+      <NextSeo
+        title="Year progress"
+        description="Shows current year progress"
+        canonical={"https://getyearprogress.com"}
+        openGraph={{
+          url: ogUrl,
+          title: "Year progress",
+          description: `${percentPassed}% of ${currentYear} has passed.`,
+          images: [{ url: ogUrl, width: 1200, height: 500 }],
+          site_name: "Year progress"
+        }}
+      />
 
       <main className="h-screen w-screen flex">
         {isCloseToEnd ? (
-          <h1 className="font-black text-6xl">{messageToDisplay}</h1>
+          <div className="m-auto flex items-center justify-center w-full p-4">
+            <h1 className="font-black text-8xl text-center">
+              {messageToDisplay}
+            </h1>
+          </div>
         ) : (
           <div className="m-auto flex flex-col items-center justify-center gap-8 w-full max-w-2xl p-4">
             <h1 className="font-black text-6xl">{currentYear}</h1>
