@@ -17,7 +17,7 @@ interface Props {
 const YearProgress: NextPage<Props> = ({
   initialPercentPassed,
   initialTimeLeft,
-  ogUrl
+  ogUrl,
 }) => {
   const timeZoneRef = useRef(Intl.DateTimeFormat().resolvedOptions().timeZone);
   const [timeLeftInSeconds, setTimeLeftInSeconds] = useState(initialTimeLeft);
@@ -56,7 +56,7 @@ const YearProgress: NextPage<Props> = ({
           title: "Year progress",
           description: `${percentPassed}% of ${currentYear} has passed.`,
           images: [{ url: ogUrl, width: 1200, height: 500 }],
-          site_name: "Year progress"
+          site_name: "Year progress",
         }}
       />
 
