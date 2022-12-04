@@ -4,13 +4,14 @@ export const calculateYearTimeLeft = (timeZone: string) => {
   const currentDate = DateTime.local({ zone: timeZone });
   const endOfYearDate = DateTime.local({ zone: timeZone }).endOf("year");
 
-  return Math.floor(endOfYearDate.diff(currentDate).as("seconds"));
+  return endOfYearDate
+    .diff(currentDate, ["months", "days", "hours", "minutes", "seconds"]);
 };
 
-export const calculateYearProgress = (timeLeftSeconds: number) => {
+export const calculateYearProgress = (timeLeftInSeconds: number) => {
   const yearDurationInSeconds = Duration.fromObject({ years: 1 }).as("seconds");
 
   return Math.floor(
-    ((yearDurationInSeconds - timeLeftSeconds) / yearDurationInSeconds) * 100
+    ((yearDurationInSeconds - timeLeftInSeconds) / yearDurationInSeconds) * 100
   );
 };

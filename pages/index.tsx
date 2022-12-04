@@ -1,4 +1,3 @@
-import Head from "next/head";
 import { GetServerSideProps, NextPage } from "next";
 import { DateTime } from "luxon";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -30,10 +29,11 @@ const YearProgress: NextPage<Props> = ({
 
   useEffect(() => {
     const intervalId = setInterval(() => {
-      const timeLeft = calculateYearTimeLeft(timeZoneRef.current);
+      const timeLeftDuration = calculateYearTimeLeft(timeZoneRef.current);
+      const timeLeftInSeconds = Math.floor(timeLeftDuration.as("seconds"));
 
-      setTimeLeftInSeconds(timeLeft);
-      setPercentPassed(calculateYearProgress(timeLeft));
+      setTimeLeftInSeconds(timeLeftInSeconds);
+      setPercentPassed(calculateYearProgress(timeLeftInSeconds));
     }, TIMER_INTERVAL_MS);
 
     return () => clearInterval(intervalId);
@@ -84,19 +84,20 @@ const YearProgress: NextPage<Props> = ({
   );
 };
 
-export const getServerSideProps: GetServerSideProps = async ({
+export const getServerSideProps: GetServerSideProps<Props> = async ({
   query,
   req,
 }) => {
   const timeZone = (req.headers["x-vercel-ip-timezone"] as string) || "UTC";
-  const timeLeft = calculateYearTimeLeft(timeZone);
-  const percentPassed = calculateYearProgress(timeLeft);
+  const timeLeftDuration = calculateYearTimeLeft(timeZone);
+  const timeLeftinSeconds = Math.floor(timeLeftDuration.as("seconds"));
+  const percentPassed = calculateYearProgress(timeLeftinSeconds);
   const { ogPercent, ogYear } = query;
 
   return {
     props: {
       initialPercentPassed: percentPassed,
-      initialTimeLeft: timeLeft,
+      initialTimeLeft: timeLeftinSeconds,
       ogUrl: `https://${req.headers.host}/api/og?currentYear=${
         ogYear || DateTime.local().year
       }&percentPassed=${ogPercent || percentPassed}`,

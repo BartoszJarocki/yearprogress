@@ -1,6 +1,6 @@
 {
-  "name": "web-year-progress-next",
-  "version": "0.1.0",
+  "name": "year-progress",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
