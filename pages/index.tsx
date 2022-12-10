@@ -1,9 +1,11 @@
 import { GetServerSideProps, NextPage } from "next";
 import { DateTime, Duration } from "luxon";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { showFireworks } from "../lib/fireworks/showFireworks";
 import { calculateYearProgress, calculateYearTimeLeft } from "../lib/utils";
 import { NextSeo } from "next-seo";
+import Icon from "@mdi/react";
+import { mdiTwitter, mdiFacebook } from "@mdi/js";
 
 const TIMER_INTERVAL_MS = 1000; // 1s
 const IS_CLOSE_THRESHOLD = 30;
@@ -13,28 +15,22 @@ interface Props {
   ogUrl: string;
 }
 
+const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
 const YearProgress: NextPage<Props> = ({ initialTimeLeft, ogUrl }) => {
-  const timeZoneRef = useRef(Intl.DateTimeFormat().resolvedOptions().timeZone);
   const [timeLeftDuration, setTimeLeftDuration] = useState<Duration>();
-  const currentYear = useMemo(() => DateTime.local().year, []);
-  const timeLeftInSeconds = useMemo(
-    () =>
-      timeLeftDuration
-        ? Math.floor(timeLeftDuration.as("seconds"))
-        : initialTimeLeft,
-    [timeLeftDuration, initialTimeLeft]
-  );
-  const percentPassed = useMemo(
-    () => calculateYearProgress(timeLeftInSeconds),
-    [timeLeftInSeconds]
-  );
+  const currentYear = DateTime.local().year;
+  const timeLeftInSeconds = timeLeftDuration
+    ? Math.floor(timeLeftDuration.as("seconds"))
+    : initialTimeLeft;
+  const percentPassed = calculateYearProgress(timeLeftInSeconds);
   const messageToDisplay =
     timeLeftInSeconds === 0 ? "Happy new year!" : timeLeftInSeconds;
   const isCloseToEnd = timeLeftInSeconds <= IS_CLOSE_THRESHOLD;
 
   useEffect(() => {
     const intervalId = setInterval(() => {
-      setTimeLeftDuration(calculateYearTimeLeft(timeZoneRef.current));
+      setTimeLeftDuration(calculateYearTimeLeft(userTimeZone));
     }, TIMER_INTERVAL_MS);
 
     return () => clearInterval(intervalId);
@@ -63,13 +59,13 @@ const YearProgress: NextPage<Props> = ({ initialTimeLeft, ogUrl }) => {
 
       <main className="h-screen w-screen flex">
         {isCloseToEnd ? (
-          <div className="m-auto flex items-center justify-center w-full p-4">
+          <section className="m-auto flex items-center justify-center w-full p-4">
             <h1 className="font-black text-8xl text-center">
               {messageToDisplay}
             </h1>
-          </div>
+          </section>
         ) : (
-          <div className="m-auto flex flex-col items-center justify-center gap-8 w-full h-full max-w-2xl p-4">
+          <section className="m-auto flex flex-col items-center gap-8 w-full h-full max-w-2xl p-4 min-h-0">
             <h1 className="mt-auto font-black text-6xl">{currentYear}</h1>
             <div className="h-8 w-full border flex-shrink-0">
               <div
@@ -81,16 +77,32 @@ const YearProgress: NextPage<Props> = ({ initialTimeLeft, ogUrl }) => {
             <div className="mt-auto font-mono min-h-[32px] text-xs">
               {timeLeftDuration && (
                 <span>
-                  {timeLeftDuration.months > 0 && `${timeLeftDuration.months} months, `} 
-                  {timeLeftDuration.days > 0 && `${timeLeftDuration.days} days, `}
-                  {timeLeftDuration.hours} hours,{" "}
-                  {timeLeftDuration.minutes} minutes,{" "}
-                  {Math.floor(timeLeftDuration.seconds)} seconds{" "}
-                  left
+                  {timeLeftDuration.months > 0 &&
+                    `${timeLeftDuration.months} months, `}
+                  {timeLeftDuration.days > 0 &&
+                    `${timeLeftDuration.days} days, `}
+                  {timeLeftDuration.hours} hours, {timeLeftDuration.minutes}{" "}
+                  minutes, {Math.floor(timeLeftDuration.seconds)} seconds left
                 </span>
               )}
             </div>
-          </div>
+            <div className="text-sm inline-flex gap-4 items-center justify-center p-4">
+              <a href="https://twitter.com/GetYearProgress">
+                <Icon
+                  path={mdiTwitter}
+                  title="Follow Year Progress on Twitter"
+                  size={0.8}
+                />
+              </a>
+              <a href="https://www.facebook.com/profile.php?id=100077422771557">
+                <Icon
+                  path={mdiFacebook}
+                  title="Follow Year Progress on Facebook"
+                  size={0.8}
+                />
+              </a>
+            </div>
+          </section>
         )}
       </main>
     </div>

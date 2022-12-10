@@ -5,9 +5,9 @@ export const config = {
   runtime: "experimental-edge",
 };
 
-const font = fetch(new URL('../../assets/SpaceGrotesk-Bold.ttf', import.meta.url)).then(
-  (res) => res.arrayBuffer(),
-);
+const font = fetch(
+  new URL("../../assets/SpaceGrotesk-Bold.ttf", import.meta.url)
+).then((res) => res.arrayBuffer());
 
 const generateOpenGraphImageHandler = async (req: NextRequest) => {
   const { searchParams } = new URL(req.url);
@@ -18,7 +18,10 @@ const generateOpenGraphImageHandler = async (req: NextRequest) => {
 
   return new ImageResponse(
     (
-      <div tw="h-screen w-screen flex bg-[#1f1f1f] text-[#e3e3e3]" style={{ fontFamily: "'Space Grotesk'"}}>
+      <div
+        tw="h-screen w-screen flex bg-[#1f1f1f] text-[#e3e3e3]"
+        style={{ fontFamily: "'Space Grotesk'" }}
+      >
         <div tw="m-auto flex flex-col items-center justify-center space-y-8 w-full max-w-2xl p-4">
           <h1 tw="font-black text-6xl">{currentYear}</h1>
           <div tw="flex h-8 w-full border border-[#e3e3e3]">
@@ -36,9 +39,9 @@ const generateOpenGraphImageHandler = async (req: NextRequest) => {
       height: 630,
       fonts: [
         {
-          name: 'Typewriter',
+          name: "Space Grotesk",
           data: fontData,
-          style: 'normal',
+          style: "normal",
         },
       ],
     }

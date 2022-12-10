@@ -9,6 +9,8 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@mdi/js": "^7.0.96",
+    "@mdi/react": "^1.6.1",
     "@next/font": "^13.0.6",
     "@vercel/analytics": "^0.1.5",
     "@vercel/og": "^0.0.21",
