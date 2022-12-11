@@ -11,22 +11,25 @@ const TIMER_INTERVAL_MS = 1000; // 1s
 const IS_CLOSE_THRESHOLD = 30;
 
 interface Props {
-  initialTimeLeft: number;
+  timeLeftInSeconds: number;
   ogUrl: string;
 }
 
 const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
-const YearProgress: NextPage<Props> = ({ initialTimeLeft, ogUrl }) => {
+const YearProgress: NextPage<Props> = ({ timeLeftInSeconds, ogUrl }) => {
   const [timeLeftDuration, setTimeLeftDuration] = useState<Duration>();
   const currentYear = DateTime.local().year;
-  const timeLeftInSeconds = timeLeftDuration
+  const currentTimeLeftInSeconds = timeLeftDuration
     ? Math.floor(timeLeftDuration.as("seconds"))
-    : initialTimeLeft;
-  const percentPassed = calculateYearProgress(timeLeftInSeconds);
+    : timeLeftInSeconds;
+
+  const yearProgressPercent = calculateYearProgress(currentTimeLeftInSeconds);
   const messageToDisplay =
-    timeLeftInSeconds === 0 ? "Happy new year!" : timeLeftInSeconds;
-  const isCloseToEnd = timeLeftInSeconds <= IS_CLOSE_THRESHOLD;
+    currentTimeLeftInSeconds === 0
+      ? "Happy new year!"
+      : currentTimeLeftInSeconds;
+  const isCloseToEnd = currentTimeLeftInSeconds <= IS_CLOSE_THRESHOLD;
 
   useEffect(() => {
     const intervalId = setInterval(() => {
@@ -37,23 +40,31 @@ const YearProgress: NextPage<Props> = ({ initialTimeLeft, ogUrl }) => {
   }, []);
 
   useEffect(() => {
-    if (timeLeftInSeconds === 0) {
+    if (currentTimeLeftInSeconds === 0) {
       showFireworks();
     }
-  }, [timeLeftInSeconds]);
+  }, [currentTimeLeftInSeconds]);
+
+  const siteName = "Year progress";
+  const title = `${currentYear} year progress`;
+  const description = `${yearProgressPercent}%`;
 
   return (
     <div>
       <NextSeo
-        title="Year progress"
-        description="Shows current year progress"
+        title={title}
+        description={description}
         canonical={"https://getyearprogress.com"}
         openGraph={{
           url: ogUrl,
-          title: `${currentYear} year progress`,
-          description: `${percentPassed}%`,
-          images: [{ url: ogUrl, width: 1200, height: 630 }],
-          site_name: "Year progress",
+          title,
+          description,
+          images: [{ url: ogUrl, width: 1200, height: 630, alt: title }],
+          site_name: siteName,
+        }}
+        twitter={{
+          handle: "@GetYearProgress",
+          cardType: "summary_large_image",
         }}
       />
 
@@ -70,10 +81,10 @@ const YearProgress: NextPage<Props> = ({ initialTimeLeft, ogUrl }) => {
             <div className="h-8 w-full border flex-shrink-0">
               <div
                 className="bg-gray-300 h-full"
-                style={{ width: `${percentPassed}%` }}
+                style={{ width: `${yearProgressPercent}%` }}
               />
             </div>
-            <h2 className="font-extrabold text-4xl">{`${percentPassed}%`}</h2>
+            <h2 className="font-extrabold text-4xl">{`${yearProgressPercent}%`}</h2>
             <div className="mt-auto font-mono min-h-[32px] text-xs">
               {timeLeftDuration && (
                 <span>
@@ -117,11 +128,12 @@ export const getServerSideProps: GetServerSideProps<Props> = async ({
   const timeLeftDuration = calculateYearTimeLeft(timeZone);
   const timeLeftinSeconds = Math.floor(timeLeftDuration.as("seconds"));
   const percentPassed = calculateYearProgress(timeLeftinSeconds);
-  const { ogPercent, ogYear } = query;
+  const ogPercent = query.ogPercent as string
+  const ogYear = query.ogYear as string
 
   return {
     props: {
-      initialTimeLeft: timeLeftinSeconds,
+      timeLeftInSeconds: timeLeftinSeconds,
       ogUrl: `https://${req.headers.host}/api/og?currentYear=${
         ogYear ?? DateTime.local().year
       }&percentPassed=${ogPercent ?? percentPassed}`,
