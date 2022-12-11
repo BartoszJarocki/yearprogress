@@ -5,16 +5,14 @@ export const config = {
   runtime: "experimental-edge",
 };
 
-const font = fetch(
-  new URL("../../assets/SpaceGrotesk-Bold.ttf", import.meta.url)
-).then((res) => res.arrayBuffer());
-
 const generateOpenGraphImageHandler = async (req: NextRequest) => {
   const { searchParams } = new URL(req.url);
   const percentPassed = searchParams.get("percentPassed");
   const currentYear = searchParams.get("currentYear");
 
-  const fontData = await font;
+  const font = await fetch(
+    new URL("../../assets/SpaceGrotesk-Bold.ttf", import.meta.url)
+  ).then((res) => res.arrayBuffer());
 
   return new ImageResponse(
     (
@@ -40,7 +38,7 @@ const generateOpenGraphImageHandler = async (req: NextRequest) => {
       fonts: [
         {
           name: "Space Grotesk",
-          data: fontData,
+          data: font,
           style: "normal",
         },
       ],
