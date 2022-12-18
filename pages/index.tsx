@@ -12,12 +12,17 @@ const IS_CLOSE_THRESHOLD = 30;
 
 interface Props {
   timeLeftInSeconds: number;
-  ogUrl: string;
+  ogYear: number;
+  ogPercentPassed: number;
 }
 
 const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
-const YearProgress: NextPage<Props> = ({ timeLeftInSeconds, ogUrl }) => {
+const YearProgress: NextPage<Props> = ({
+  timeLeftInSeconds,
+  ogYear,
+  ogPercentPassed,
+}) => {
   const [timeLeftDuration, setTimeLeftDuration] = useState<Duration>();
   const currentYear = DateTime.local().year;
   const currentTimeLeftInSeconds = timeLeftDuration
@@ -45,21 +50,23 @@ const YearProgress: NextPage<Props> = ({ timeLeftInSeconds, ogUrl }) => {
     }
   }, [currentTimeLeftInSeconds]);
 
+  const url = "https://getyearprogress.com";
   const siteName = "Year progress";
-  const title = `${currentYear} year progress`;
-  const description = `${yearProgressPercent}%`;
+  const title = `${ogYear} year progress`;
+  const description = `${ogPercentPassed}%`;
+  const imageUrl = `${process.env.NEXT_PUBLIC_URL}/api/og?currentYear=${ogYear}&percentPassed=${ogPercentPassed}`;
 
   return (
     <div>
       <NextSeo
         title={title}
         description={description}
-        canonical={"https://getyearprogress.com"}
+        canonical={url}
         openGraph={{
-          url: ogUrl,
+          url,
           title,
           description,
-          images: [{ url: ogUrl, width: 1200, height: 630, alt: title }],
+          images: [{ url: imageUrl, width: 1200, height: 630, alt: title }],
           site_name: siteName,
         }}
         twitter={{
@@ -127,16 +134,15 @@ export const getServerSideProps: GetServerSideProps<Props> = async ({
   const timeZone = (req.headers["x-vercel-ip-timezone"] as string) || "UTC";
   const timeLeftDuration = calculateYearTimeLeft(timeZone);
   const timeLeftinSeconds = Math.floor(timeLeftDuration.as("seconds"));
-  const percentPassed = calculateYearProgress(timeLeftinSeconds);
-  const ogPercent = query.ogPercent as string
-  const ogYear = query.ogYear as string
+  const ogPercentPassed = query.ogPercent as number | undefined;
+  const ogYear = query.ogYear as number | undefined;
 
   return {
     props: {
       timeLeftInSeconds: timeLeftinSeconds,
-      ogUrl: `https://${req.headers.host}/api/og?currentYear=${
-        ogYear ?? DateTime.local().year
-      }&percentPassed=${ogPercent ?? percentPassed}`,
+      ogPercentPassed:
+        ogPercentPassed ?? calculateYearProgress(timeLeftinSeconds),
+      ogYear: ogYear ?? DateTime.local().year,
     },
   };
 };
