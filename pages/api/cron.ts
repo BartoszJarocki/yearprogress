@@ -1,5 +1,6 @@
-// @ts-nocheck
+import type { NextApiRequest, NextApiResponse } from "next";
 import moment from "moment-timezone";
+// @ts-ignore
 import FB from "fb";
 import TwitterApi from "twitter-api-v2";
 
@@ -18,6 +19,7 @@ declare global {
 const timeZone = `Pacific/Auckland`;
 FB.setAccessToken(process.env.FB_ACCESS_TOKEN);
 
+console.log("Creating Twitter client...", process.env.TWITTER_APP_KEY);
 const twitterClient = new TwitterApi(
   new TwitterApi({
     appKey: process.env.TWITTER_APP_KEY,
@@ -63,7 +65,7 @@ const calculatePercentPassed = (startDate: any) => {
   );
 };
 
-const SocialMediaRobot = async () => {
+const SocialMediaRobot = async (req: NextApiRequest, res: NextApiResponse) => {
   console.log("Running YearProgress robot....");
 
   const now = moment.tz(timeZone);
@@ -76,23 +78,30 @@ const SocialMediaRobot = async () => {
   console.log(`Yesterday: ${yesterdayPercentPassed}%`);
   console.log(`Today: ${todayPercentPassed}%`);
 
+  let result = { fb: "", twitter: "" };
   if (todayPercentPassed > yesterdayPercentPassed) {
     try {
       await postToFacebook(message, url);
       console.log("Posted to Facebook.");
-    } catch (e) {
+      result.fb = "success";
+    } catch (e: any) {
       console.error(e);
+      result.fb = e.message || "error";
     }
 
     try {
       await postToTwitter(message);
       console.log("Posted to Twitter.");
-    } catch (error) {
+      result.twitter = "success";
+    } catch (error: any) {
       console.error(error);
+      result.twitter = error.message || "error";
     }
   } else {
     console.log("No need to post.");
   }
+
+  res.status(200).json({ result });
 };
 
 export default SocialMediaRobot;
