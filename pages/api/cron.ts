@@ -79,27 +79,27 @@ const SocialMediaRobot = async (req: NextApiRequest, res: NextApiResponse) => {
   console.log(`Today: ${todayPercentPassed}%`);
 
   let result = { fb: "", twitter: "" };
-  if (todayPercentPassed > yesterdayPercentPassed) {
-    try {
-      await postToFacebook(message, url);
-      console.log("Posted to Facebook.");
-      result.fb = "success";
-    } catch (e: any) {
-      console.error(e);
-      result.fb = e.message || "error";
-    }
-
-    try {
-      await postToTwitter(message);
-      console.log("Posted to Twitter.");
-      result.twitter = "success";
-    } catch (error: any) {
-      console.error(error);
-      result.twitter = error.message || "error";
-    }
-  } else {
-    console.log("No need to post.");
+  // if (todayPercentPassed > yesterdayPercentPassed) {
+  try {
+    await postToFacebook(message, url);
+    console.log("Posted to Facebook.");
+    result.fb = "success";
+  } catch (e: any) {
+    console.error(e);
+    result.fb = e.message || "error";
   }
+
+  try {
+    await postToTwitter(message);
+    console.log("Posted to Twitter.");
+    result.twitter = "success";
+  } catch (error: any) {
+    console.error(error);
+    result.twitter = error.message || "error";
+  }
+  // } else {
+  //   console.log("No need to post.");
+  // }
 
   res.status(200).json({ result });
 };
