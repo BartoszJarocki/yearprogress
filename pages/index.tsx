@@ -120,6 +120,12 @@ const YearProgress: NextPage<Props> = ({
                 />
               </a>
             </div>
+
+            <div>
+              <a className="underline text-sm" href="https://useminimal.com/">
+                Check out our free self print minimalist calendars
+              </a>
+            </div>
           </section>
         )}
       </main>
